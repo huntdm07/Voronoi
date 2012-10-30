@@ -173,8 +173,6 @@ public class Fortune {
 				left.setPlusEdge(newEdge);
 				right.setMinusEdge(newEdge);
 
-				/************************** END DEBUGGING ***************************************/
-
 			}
 
 			// update to take into account the event that was just processed
@@ -183,7 +181,7 @@ public class Fortune {
 			visualiser.redraw();
 			try {
 				drawVoronoi(sweep);
-				Thread.sleep(1000);
+				Thread.sleep(10);
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
@@ -225,12 +223,12 @@ public class Fortune {
 		boolean end;
 
 		// increment sweep by a small amount so that two intersections can be found
-		sweep = sweep - ((double)RANGE)/numPoints/1000000.0;
-		updateArcs(sweep);
+		//sweep = sweep - ((double)RANGE)/numPoints/1000000.0;
+		//updateArcs(sweep);
 		// find the arc above this event in the beach line (in log(beachLine.size()) time)
 		Arc current = new Arc(e);
 		Arc above = beachLine.lower(current);
-
+		
 		/* check for cases at the end of the beach line, when a new edge must be added to the inner arc */
 		if((above.getLeft() == -Double.MAX_VALUE || above.getRight() == Double.MAX_VALUE) 
 				&& beachLine.size() >= 3) {
@@ -240,13 +238,17 @@ public class Fortune {
 			end = false;
 		}
 
-		System.out.println("Above: " + above.getLeft() + "," + above.getRight());
+		System.out.println("Above: " + above.getLeft() + "," + above.getRight() + " point: " + above.getPoint().getX());
+		if(above.getRightNeighbour() != null)
+		System.out.println("Above right: " + above.getRightNeighbour().getLeft() + "," + above.getRightNeighbour().getRight() + " point: " + above.getRightNeighbour().getPoint().getX());		
 		System.out.println("Event x: " + e.getPoint().getX());
+		
+		updateArcs(sweep);
 		// find the intersections of the current arc with the arc above it (may be over beach line)
 		double intersectionLeft, intersectionRight;
 		double[] intersections = intersectArc(current,above,sweep);
-		intersectionLeft = intersections[0];
-		intersectionRight = intersections[1];
+		intersectionLeft = intersections[0]-0.01;
+		intersectionRight = intersections[1]+0.01;
 
 		// create a list for storing intermediate arcs (will later need to be deleted)
 		LinkedList<Arc> arcList = new LinkedList<Arc>();
@@ -254,7 +256,7 @@ public class Fortune {
 
 		// delete all intermediate arcs from the beach line and remove their circle events
 		deleteArcsAndCircles(arcList);
-
+		
 		// update the boundaries of current
 		current.setLeft(intersectionLeft);
 		current.setRight(intersectionRight);
@@ -265,8 +267,8 @@ public class Fortune {
 
 		// create new arcs for left and right, to be added to the beach line
 		Arc left,right;
-		left = new Arc(above.getPoint(),above.getLeftNeighbour(),current,above.getMinusEdge());
-		right = new Arc(above.getPoint(),current,above.getRightNeighbour(),above.getPlusEdge());
+		left = new Arc(above.getPoint(),above.getLeftNeighbour(),current,above.getMinusEdge(),above.getLeft(),intersectionLeft);
+		right = new Arc(above.getPoint(),current,above.getRightNeighbour(),above.getPlusEdge(),intersectionRight,above.getRight());
 		// update the neighbours accordingly
 		current.setLeftNeighbour(left);
 		current.setRightNeighbour(right);
@@ -289,12 +291,11 @@ public class Fortune {
 		beachLine.add(current);
 		beachLine.add(left);
 		beachLine.add(right);
-		// when the second event is considered, add lines to the first arc
-		//		if(beachLine.size() == 3) {
-		//			beachLine.first().setEdges(current.g)
-		//		}
-		System.out.println(left.getLeft() + " " + current.getLeft() + " " + right.getLeft() );
-		System.out.println(intersectionLeft + " " + intersectionRight );
+
+		System.out.println(left.getLeft() + " " + left.getRight());
+		System.out.println(current.getLeft() + " " + current.getRight());
+		System.out.println(right.getLeft() + " " + right.getRight());
+		System.out.println(current.compareTo(left) + " " + current.compareTo(right));
 
 		// check for new circle events on left, current and right, and add them
 		addCircles(left,current,right);

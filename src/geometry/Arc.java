@@ -59,19 +59,15 @@ public class Arc implements Comparable<Arc> {
 	 * @param point the point about which this arc is based
 	 * @param left the arc that is the left neighbour of this arc
 	 * @param right the arc that is the right neighbour of this arc
+	 * @param right 
+	 * @param left 
 	 */
-	public Arc(Point point, Arc left, Arc right, Line edge) {
-		if(left!=null) {
-			this.setLeftNeighbour(left);
-			this.setLeft(left.getRight());
-		} else {
-			this.setLeft(-Double.MAX_VALUE);
+	public Arc(Point point, Arc leftNeighbour, Arc rightNeighbour, Line edge, double left, double right) {
+		if(leftNeighbour!=null) {
+			this.setLeftNeighbour(leftNeighbour);
 		}
-		if(right!=null) {
-			this.setRightNeighbour(right);
-			this.setRight(right.getLeft());
-		} else {
-			this.setRight(-Double.MAX_VALUE);
+		if(rightNeighbour!=null) {
+			this.setRightNeighbour(rightNeighbour);
 		}
 		if(edge!=null) {
 			this.setPlusEdge(edge);
@@ -79,6 +75,9 @@ public class Arc implements Comparable<Arc> {
 			minusEdge.setHalfEdge(plusEdge);
 			plusEdge.setHalfEdge(minusEdge);
 		}
+		
+		this.setLeft(left);
+		this.setRight(right);
 
 		this.setPoint(point);
 	}
@@ -124,7 +123,7 @@ public class Arc implements Comparable<Arc> {
 	public int compareTo(Arc a) {
 		if(this.left < a.getLeft()) {
 			return -1;
-		} else if (this.left == a.getLeft() ) {
+		} else if (this.left == a.getLeft() && this.right == a.getRight() ) {
 			return 0;
 		}
 		return 1;
